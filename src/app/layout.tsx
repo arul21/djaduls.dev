@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { champion, contacts } from "@/lib/data";
 import "./globals.css";
 
@@ -104,6 +105,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#010a13] text-[#cdbe91] font-mono">
         {children}
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }
