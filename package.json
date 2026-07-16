@@ -2,6 +2,12 @@
   "name": "djaduls",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": {
+    "name": "Khairul Baharuddin",
+    "email": "hey@djaduls.dev",
+    "url": "https://github.com/arul21"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
