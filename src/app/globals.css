@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+:root {
+  --color-void: #010a13;
+  --color-void-deep: #000000;
+  --color-navy: #0a1428;
+  --color-navy-light: #1e2328;
+  --color-gold: #c89b3c;
+  --color-gold-bright: #f0e6d2;
+  --color-gold-dim: #785a28;
+  --color-parchment: #cdbe91;
+  --color-hextech-blue: #0bc4e3;
+  --color-hextech-blue-dim: #087f94;
+}
+
+@theme inline {
+  --font-heading: var(--font-cinzel);
+  --font-mono: var(--font-mono);
+  --color-void: var(--color-void);
+  --color-navy: var(--color-navy);
+  --color-navy-light: var(--color-navy-light);
+  --color-gold: var(--color-gold);
+  --color-gold-bright: var(--color-gold-bright);
+  --color-gold-dim: var(--color-gold-dim);
+  --color-parchment: var(--color-parchment);
+  --color-hextech-blue: var(--color-hextech-blue);
+  --color-hextech-blue-dim: var(--color-hextech-blue-dim);
+}
+
+* {
+  scrollbar-color: var(--color-gold-dim) var(--color-void);
+  scrollbar-width: thin;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-void);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(200, 155, 60, 0.12), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(10, 200, 185, 0.06), transparent),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.015) 0px,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  background-attachment: fixed;
+}
+
+.font-heading {
+  font-family: var(--font-cinzel), serif;
+}
+
+/* Hextech ornamental border */
+@utility hextech-border {
+  position: relative;
+  border: 1px solid var(--color-gold-dim);
+}
+
+.hextech-border::before,
+.hextech-border::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--color-gold);
+  pointer-events: none;
+}
+
+.hextech-border::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.hextech-border::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+@utility gold-glow {
+  box-shadow: 0 0 20px rgba(200, 155, 60, 0.25), inset 0 0 20px rgba(200, 155, 60, 0.05);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 12px rgba(200, 155, 60, 0.5);
+}
+
+.text-glow-blue {
+  text-shadow: 0 0 10px rgba(10, 200, 185, 0.6);
+}
+
+.clip-hex {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.diamond {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+/* Rotating hextech ring around the champion avatar */
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ring-spin {
+  animation: ring-spin 6s linear infinite;
+}
+
+/* Gold shimmer sweep across filled stat bars */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-140%);
+  }
+  100% {
+    transform: translateX(340%);
+  }
+}
+
+.shimmer-sweep {
+  animation: shimmer-sweep 2.4s ease-in-out infinite;
+}
+
+/* Floating background runes/hexagons */
+@keyframes rune-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-22px) rotate(8deg);
+  }
+}
+
+.rune-float {
+  animation: rune-float 8s ease-in-out infinite;
+}
+
+/* Custom cursor: only enabled by JS on fine-pointer devices */
+.custom-cursor-active,
+.custom-cursor-active * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ring-spin,
+  .shimmer-sweep,
+  .rune-float {
+    animation: none !important;
+  }
+}
