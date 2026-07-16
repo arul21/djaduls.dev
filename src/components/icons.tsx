@@ -13,3 +13,82 @@ export function LinkedinIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// Tab-nav rune icons. Drawn as SVG rather than Unicode glyphs (◆ ✦ ⚔ ⏳ ⬡)
+// because several of those symbols have no glyph in the heading font and fall
+// back to inconsistent system emoji/tofu rendering across OSes.
+export function DiamondIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 2 21 12 12 22 3 12Z" />
+    </svg>
+  );
+}
+
+export function SparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
+  );
+}
+
+export function SwordsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M3 21 21 3" />
+      <path d="M15 3h6v6" />
+      <path d="M21 21 3 3" />
+      <path d="M3 9V3h6" />
+    </svg>
+  );
+}
+
+export function HourglassIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M6 3h12" />
+      <path d="M6 21h12" />
+      <path d="M7 3c0 5 4 6 5 9-1 3-5 4-5 9" />
+      <path d="M17 3c0 5-4 6-5 9 1 3 5 4 5 9" />
+    </svg>
+  );
+}
+
+export function HexagonIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 2 21 7V17L12 22 3 17V7Z" />
+    </svg>
+  );
+}

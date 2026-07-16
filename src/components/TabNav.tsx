@@ -2,6 +2,13 @@
 
 import { motion } from "framer-motion";
 import { useSound } from "@/lib/sound-context";
+import {
+  DiamondIcon,
+  HexagonIcon,
+  HourglassIcon,
+  SparkleIcon,
+  SwordsIcon,
+} from "./icons";
 
 export type TabKey =
   | "stats"
@@ -10,12 +17,17 @@ export type TabKey =
   | "history"
   | "techstack";
 
-export const TABS: { key: TabKey; label: string; rune: string; hotkey: string }[] = [
-  { key: "stats", label: "Stats", rune: "◆", hotkey: "1" },
-  { key: "abilities", label: "Abilities", rune: "✦", hotkey: "2" },
-  { key: "quests", label: "Quests", rune: "⚔", hotkey: "3" },
-  { key: "history", label: "History", rune: "⏳", hotkey: "4" },
-  { key: "techstack", label: "Stack", rune: "⬡", hotkey: "5" },
+export const TABS: {
+  key: TabKey;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  hotkey: string;
+}[] = [
+  { key: "stats", label: "Stats", icon: DiamondIcon, hotkey: "1" },
+  { key: "abilities", label: "Abilities", icon: SparkleIcon, hotkey: "2" },
+  { key: "quests", label: "Quests", icon: SwordsIcon, hotkey: "3" },
+  { key: "history", label: "History", icon: HourglassIcon, hotkey: "4" },
+  { key: "techstack", label: "Stack", icon: HexagonIcon, hotkey: "5" },
 ];
 
 export default function TabNav({
@@ -31,6 +43,7 @@ export default function TabNav({
     <nav className="pointer-events-auto sticky top-0 z-20 mx-auto flex w-full max-w-2xl justify-center gap-1 border-y border-gold-dim/40 bg-[#010a13]/90 px-2 backdrop-blur-sm sm:gap-2">
       {TABS.map((tab) => {
         const isActive = tab.key === active;
+        const Icon = tab.icon;
         return (
           <button
             key={tab.key}
@@ -38,7 +51,7 @@ export default function TabNav({
               playClick();
               onChange(tab.key);
             }}
-            className="relative flex-1 cursor-pointer py-3 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-void sm:py-4"
+            className="relative flex-1 cursor-pointer py-3 text-center outline-none transition-colors sm:py-4"
           >
             <kbd className="absolute top-1 right-1 hidden rounded-sm border border-gold-dim/40 px-1 font-mono text-[8px] text-parchment/40 sm:top-1.5 sm:right-2 sm:inline-block">
               {tab.hotkey}
@@ -48,7 +61,7 @@ export default function TabNav({
                 isActive ? "text-gold-bright text-glow-gold" : "text-parchment/50 hover:text-parchment/80"
               }`}
             >
-              <span className="text-sm sm:text-base">{tab.rune}</span>
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {tab.label}
             </span>
             {isActive && (
