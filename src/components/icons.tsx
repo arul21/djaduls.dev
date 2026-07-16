@@ -92,3 +92,78 @@ export function HexagonIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// LoL-style ping icons for the chamber ping system.
+export function PingForwardIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 3 12 17" />
+      <path d="M6 11 12 17 18 11" />
+    </svg>
+  );
+}
+
+export function PingDangerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 3 22 20 2 20Z" />
+      <path d="M12 9v5" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
+export function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M8 4h8v5a4 4 0 0 1-8 0Z" />
+      <path d="M8 5H4v1a4 4 0 0 0 4 4" />
+      <path d="M16 5h4v1a4 4 0 0 1-4 4" />
+      <path d="M12 13v3" />
+      <path d="M9 20h6" />
+      <path d="M10 16h4l1 4H9Z" />
+    </svg>
+  );
+}
+
+export function PingMissingIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.7-2.4 3.7" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}

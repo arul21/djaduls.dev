@@ -6,9 +6,13 @@ import Image from "next/image";
 import { Mail } from "lucide-react";
 import { champion, contacts } from "@/lib/data";
 import { useSound } from "@/lib/sound-context";
+import { useAchievements } from "@/lib/achievements-context";
 import { getAgeProgress } from "@/lib/age";
 import { GithubIcon, LinkedinIcon } from "./icons";
+import RankBadge from "./RankBadge";
 import type { TabKey } from "./TabNav";
+
+const RECALL_DURATION_MS = 1100;
 
 const SOCIAL_ICONS: Record<
   string,
@@ -26,7 +30,9 @@ export default function ChampionCard({
   onNavigate: (tab: TabKey) => void;
   onSummon: () => void;
 }) {
-  const { playClick, audioLevel } = useSound();
+  const { playClick, playRecallComplete, playRecallCancel, audioLevel } =
+    useSound();
+  const { unlock } = useAchievements();
   const socials = contacts.filter((c) => c.icon in SOCIAL_ICONS);
   const { age, nextLevel, progress } = getAgeProgress(champion.birthDate);
   const ringScale = useTransform(audioLevel, [0, 1], [1, 1.07]);
@@ -48,14 +54,59 @@ export default function ChampionCard({
     );
   }, []);
 
+  const [channelState, setChannelState] = useState<
+    "idle" | "channeling" | "complete"
+  >("idle");
+  const channelTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (channelTimeoutRef.current) clearTimeout(channelTimeoutRef.current);
+      if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+    };
+  }, []);
+
   const handleCta = (tab: TabKey) => {
     playClick();
     onNavigate(tab);
   };
 
-  const handleSummon = () => {
-    playClick();
-    onSummon();
+  const startChannel = () => {
+    if (channelState !== "idle") return;
+    setChannelState("channeling");
+    channelTimeoutRef.current = setTimeout(() => {
+      setChannelState("complete");
+      playRecallComplete();
+      unlock("summoner-verified");
+      onSummon();
+      resetTimeoutRef.current = setTimeout(
+        () => setChannelState("idle"),
+        700
+      );
+    }, RECALL_DURATION_MS);
+  };
+
+  const cancelChannel = () => {
+    if (channelTimeoutRef.current) {
+      clearTimeout(channelTimeoutRef.current);
+      channelTimeoutRef.current = null;
+    }
+    if (channelState === "channeling") {
+      setChannelState("idle");
+      playRecallCancel();
+    }
+  };
+
+  const handleSummonKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.key === "Enter" || e.key === " ") && !e.repeat) {
+      e.preventDefault();
+      startChannel();
+    }
+  };
+
+  const handleSummonKeyUp = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") cancelChannel();
   };
 
   return (
@@ -154,6 +205,8 @@ export default function ChampionCard({
           </p>
         </div>
 
+        <RankBadge />
+
         <p className='max-w-md text-xs text-parchment/60 sm:text-sm'>
           {champion.quote}
         </p>
@@ -166,10 +219,48 @@ export default function ChampionCard({
             Lihat Quest Saya
           </button>
           <button
-            onClick={handleSummon}
-            className='hextech-border bg-gradient-to-b from-hextech-blue-dim/20 to-transparent px-5 py-2.5 font-heading text-xs uppercase tracking-[0.2em] text-hextech-blue transition-shadow hover:gold-glow sm:text-sm'
+            onPointerDown={startChannel}
+            onPointerUp={cancelChannel}
+            onPointerLeave={cancelChannel}
+            onKeyDown={handleSummonKeyDown}
+            onKeyUp={handleSummonKeyUp}
+            className='hextech-border relative select-none overflow-hidden bg-gradient-to-b from-hextech-blue-dim/20 to-transparent px-5 py-2.5 font-heading text-xs uppercase tracking-[0.2em] text-hextech-blue transition-shadow hover:gold-glow sm:text-sm'
           >
-            Summon Me
+            {channelState === "channeling" && (
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: RECALL_DURATION_MS / 1000, ease: "linear" }}
+                style={{ originX: 0 }}
+                className='absolute inset-0 bg-hextech-blue/25'
+              />
+            )}
+            {channelState === "channeling" && (
+              <svg
+                className='pointer-events-none absolute inset-0 h-full w-full'
+                viewBox='0 0 100 100'
+                preserveAspectRatio='none'
+              >
+                <motion.rect
+                  x='1'
+                  y='1'
+                  width='98'
+                  height='98'
+                  fill='none'
+                  stroke='var(--color-hextech-blue)'
+                  strokeWidth='2'
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{
+                    duration: RECALL_DURATION_MS / 1000,
+                    ease: "linear",
+                  }}
+                />
+              </svg>
+            )}
+            <span className='relative z-10'>
+              {channelState === "complete" ? "Summoned!" : "Summon Me"}
+            </span>
           </button>
         </div>
 

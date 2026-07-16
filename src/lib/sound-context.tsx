@@ -20,6 +20,10 @@ type SoundContextValue = {
   playHover: () => void;
   playFanfare: () => void;
   playWarp: () => void;
+  playRecallComplete: () => void;
+  playRecallCancel: () => void;
+  playPing: () => void;
+  playAchievement: () => void;
   audioLevel: MotionValue<number>;
   registerAudioElement: (audio: HTMLAudioElement) => void;
 };
@@ -195,6 +199,80 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     }
   }, [muted, getContext]);
 
+  const playRecallComplete = useCallback(() => {
+    if (muted) return;
+    try {
+      const ctx = getContext();
+      const now = ctx.currentTime;
+      [523, 784].forEach((freq, i) => {
+        playTone(ctx, {
+          startTime: now + i * 0.09,
+          type: "triangle",
+          startFreq: freq,
+          endFreq: freq,
+          duration: 0.22,
+          peakGain: 0.18,
+        });
+      });
+    } catch {
+      // Web Audio unavailable — sound is a non-essential enhancement.
+    }
+  }, [muted, getContext, playTone]);
+
+  const playRecallCancel = useCallback(() => {
+    if (muted) return;
+    try {
+      const ctx = getContext();
+      playTone(ctx, {
+        startTime: ctx.currentTime,
+        type: "sawtooth",
+        startFreq: 380,
+        endFreq: 140,
+        duration: 0.18,
+        peakGain: 0.1,
+      });
+    } catch {
+      // Web Audio unavailable — sound is a non-essential enhancement.
+    }
+  }, [muted, getContext, playTone]);
+
+  const playPing = useCallback(() => {
+    if (muted) return;
+    try {
+      const ctx = getContext();
+      playTone(ctx, {
+        startTime: ctx.currentTime,
+        type: "sine",
+        startFreq: 880,
+        endFreq: 1320,
+        duration: 0.16,
+        peakGain: 0.14,
+      });
+    } catch {
+      // Web Audio unavailable — sound is a non-essential enhancement.
+    }
+  }, [muted, getContext, playTone]);
+
+  const playAchievement = useCallback(() => {
+    if (muted) return;
+    try {
+      const ctx = getContext();
+      const now = ctx.currentTime;
+      [659, 880, 1175].forEach((freq, i) => {
+        playTone(ctx, {
+          startTime: now + i * 0.1,
+          type: "triangle",
+          startFreq: freq,
+          endFreq: freq,
+          duration: 0.3,
+          peakGain: 0.15,
+        });
+      });
+    } catch {
+      // Web Audio unavailable — sound is a non-essential enhancement.
+    }
+  }, [muted, getContext, playTone]);
+
   const registerAudioElement = useCallback(
     (audio: HTMLAudioElement) => {
       if (registeredElRef.current === audio) return;
@@ -244,6 +322,10 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       playHover,
       playFanfare,
       playWarp,
+      playRecallComplete,
+      playRecallCancel,
+      playPing,
+      playAchievement,
       audioLevel,
       registerAudioElement,
     }),
@@ -254,6 +336,10 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       playHover,
       playFanfare,
       playWarp,
+      playRecallComplete,
+      playRecallCancel,
+      playPing,
+      playAchievement,
       audioLevel,
       registerAudioElement,
     ]

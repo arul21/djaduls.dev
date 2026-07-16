@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Mail, ScrollText } from "lucide-react";
 import { contacts } from "@/lib/data";
 import { GithubIcon, LinkedinIcon } from "./icons";
+import SummonerCardButton from "./SummonerCardButton";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   mail: Mail,
@@ -51,6 +52,8 @@ export default function SummonPanel() {
           );
         })}
       </div>
+
+      <SummonerCardButton />
     </div>
   );
 }

@@ -5,8 +5,88 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Sparkles } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { useSound } from "@/lib/sound-context";
+import { useAchievements } from "@/lib/achievements-context";
+import { PingDangerIcon, PingForwardIcon, PingMissingIcon } from "./icons";
+
+const COMBO_WINDOW_MS = 2500;
+const COMBO_TARGET = 3;
+
+type TimePalette = {
+  primary: string;
+  secondary: string;
+  ambient: number;
+  primaryIntensity: number;
+  secondaryIntensity: number;
+};
+
+// Shifts the chamber's lighting palette to match the visitor's local time of
+// day — warmer/dimmer at the edges of the day, brightest at midday. This
+// component only ever renders client-side (loaded with ssr: false), so
+// reading the local clock during initial render is safe here.
+function getTimePalette(): TimePalette {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) {
+    // Morning — warm gold, gentle
+    return {
+      primary: "#e0a94a",
+      secondary: "#0bc4e3",
+      ambient: 0.65,
+      primaryIntensity: 95,
+      secondaryIntensity: 85,
+    };
+  }
+  if (hour >= 11 && hour < 17) {
+    // Midday — brightest, balanced
+    return {
+      primary: "#c89b3c",
+      secondary: "#0bc4e3",
+      ambient: 0.7,
+      primaryIntensity: 100,
+      secondaryIntensity: 100,
+    };
+  }
+  if (hour >= 17 && hour < 21) {
+    // Evening — sunset warmth
+    return {
+      primary: "#e0703c",
+      secondary: "#7b3ce0",
+      ambient: 0.55,
+      primaryIntensity: 100,
+      secondaryIntensity: 80,
+    };
+  }
+  // Night — cool blue, dimmer
+  return {
+    primary: "#5b7cfa",
+    secondary: "#0bc4e3",
+    ambient: 0.4,
+    primaryIntensity: 70,
+    secondaryIntensity: 90,
+  };
+}
+
+type PingKind = "onMyWay" | "danger" | "missing";
+
+type PingMarker = { id: number; x: number; y: number; kind: PingKind };
+
+const PING_KINDS: PingKind[] = ["onMyWay", "danger", "missing"];
+
+const PING_META: Record<
+  PingKind,
+  { label: string; color: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  onMyWay: { label: "ON MY WAY!", color: "#0bc4e3", icon: PingForwardIcon },
+  danger: { label: "DANGER!", color: "#e05a4e", icon: PingDangerIcon },
+  missing: { label: "MISSING!", color: "#c89b3c", icon: PingMissingIcon },
+};
 
 const CRYSTAL_COUNT = 14;
 const ENTRANCE_DURATION = 2.4;
@@ -223,9 +303,41 @@ function ChamberGroup({
 }
 
 export default function HextechChamber() {
-  const { audioLevel, playHover, playClick } = useSound();
+  const { audioLevel, playHover, playClick, playPing } = useSound();
+  const { unlock } = useAchievements();
   const [reducedMotion, setReducedMotion] = useState(false);
   const [allowDrag, setAllowDrag] = useState(false);
+  const [pings, setPings] = useState<PingMarker[]>([]);
+  const pingIdRef = useRef(0);
+  const [palette] = useState(getTimePalette);
+  const comboTimestampsRef = useRef<number[]>([]);
+
+  const handleCrystalBurst = () => {
+    playClick();
+    const now = Date.now();
+    const recent = comboTimestampsRef.current.filter(
+      (t) => now - t < COMBO_WINDOW_MS
+    );
+    recent.push(now);
+    comboTimestampsRef.current = recent;
+    if (recent.length >= COMBO_TARGET) {
+      unlock("combo-master");
+      comboTimestampsRef.current = [];
+    }
+  };
+
+  const handlePointerMissed = (event: MouseEvent) => {
+    const kind = PING_KINDS[Math.floor(Math.random() * PING_KINDS.length)];
+    const id = pingIdRef.current++;
+    setPings((prev) => [
+      ...prev,
+      { id, x: event.clientX, y: event.clientY, kind },
+    ]);
+    playPing();
+    setTimeout(() => {
+      setPings((prev) => prev.filter((p) => p.id !== id));
+    }, 1000);
+  };
 
   // Fixed full-page backdrop: dive deeper with raw page scroll, and dim once
   // the reader is past the hero so the content stays readable.
@@ -243,6 +355,7 @@ export default function HextechChamber() {
   }, []);
 
   return (
+    <>
     <motion.div
       className="fixed inset-0 z-0"
       style={{ opacity: chamberOpacity }}
@@ -253,10 +366,19 @@ export default function HextechChamber() {
         camera={{ position: [0, 0, 8], fov: 50 }}
         gl={{ alpha: true, antialias: true }}
         dpr={[1, 1.75]}
+        onPointerMissed={handlePointerMissed}
       >
-        <ambientLight intensity={0.6} />
-        <pointLight position={[4, 3, 4]} intensity={90} color="#c89b3c" />
-        <pointLight position={[-4, -2, 3]} intensity={100} color="#0bc4e3" />
+        <ambientLight intensity={palette.ambient} />
+        <pointLight
+          position={[4, 3, 4]}
+          intensity={palette.primaryIntensity}
+          color={palette.primary}
+        />
+        <pointLight
+          position={[-4, -2, 3]}
+          intensity={palette.secondaryIntensity}
+          color={palette.secondary}
+        />
         <pointLight position={[0, 4, -4]} intensity={30} color="#ffffff" />
 
         {!reducedMotion && (
@@ -274,7 +396,7 @@ export default function HextechChamber() {
           audioLevel={audioLevel}
           scrollProgress={scrollY}
           onHoverSound={playHover}
-          onBurstSound={playClick}
+          onBurstSound={handleCrystalBurst}
         />
 
         <OrbitControls
@@ -297,5 +419,48 @@ export default function HextechChamber() {
         </EffectComposer>
       </Canvas>
     </motion.div>
+
+    <div className="pointer-events-none fixed inset-0 z-[3] overflow-hidden">
+      <AnimatePresence>
+        {pings.map((p) => {
+          const meta = PING_META[p.kind];
+          const Icon = meta.icon;
+          return (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 0, scale: 0.6 }}
+              animate={{ opacity: 1, y: -12, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center gap-1"
+              style={{ left: p.x, top: p.y }}
+            >
+              <span
+                className="font-heading text-[10px] font-bold uppercase tracking-[0.15em]"
+                style={{ color: meta.color, textShadow: `0 0 10px ${meta.color}` }}
+              >
+                {meta.label}
+              </span>
+              <motion.div
+                initial={{ scale: 0.4, opacity: 0.9 }}
+                animate={{ scale: 1.6, opacity: 0 }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+                className="absolute top-full h-10 w-10 rounded-full border-2"
+                style={{ borderColor: meta.color }}
+              />
+              <span
+                style={{
+                  color: meta.color,
+                  filter: `drop-shadow(0 0 6px ${meta.color})`,
+                }}
+              >
+                <Icon className="h-6 w-6" />
+              </span>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+    </>
   );
 }

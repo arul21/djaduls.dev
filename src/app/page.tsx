@@ -18,7 +18,11 @@ import SoundToggle from "@/components/SoundToggle";
 import BackgroundMusic from "@/components/BackgroundMusic";
 import ClickPing from "@/components/ClickPing";
 import KonamiEasterEgg from "@/components/KonamiEasterEgg";
+import AchievementToasts from "@/components/AchievementToasts";
+import ShortcutsOverlay from "@/components/ShortcutsOverlay";
+import WelcomeBack from "@/components/WelcomeBack";
 import { SoundProvider, useSound } from "@/lib/sound-context";
+import { AchievementsProvider, useAchievements } from "@/lib/achievements-context";
 
 // WebGL warp effect — browser-only, loaded just-in-time after the loading screen.
 const WarpTunnel = dynamic(() => import("@/components/WarpTunnel"), {
@@ -37,6 +41,40 @@ const PANELS: Record<TabKey, React.ComponentType> = {
   history: HistoryPanel,
   techstack: TechStackPanel,
 };
+
+function AchievementTriggers({
+  tab,
+  footerRef,
+}: {
+  tab: TabKey;
+  footerRef: React.RefObject<HTMLElement | null>;
+}) {
+  const { unlock } = useAchievements();
+  const visitedRef = useRef<Set<TabKey>>(new Set());
+
+  useEffect(() => {
+    visitedRef.current.add(tab);
+    if (visitedRef.current.size >= TABS.length) unlock("explorer");
+  }, [tab, unlock]);
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          unlock("deep-diver");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.6 }
+    );
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, [unlock, footerRef]);
+
+  return null;
+}
 
 function KeyboardShortcuts({ onSelect }: { onSelect: (tab: TabKey) => void }) {
   const { playClick } = useSound();
@@ -68,6 +106,7 @@ export default function Home() {
   const [tab, setTab] = useState<TabKey>("stats");
   const panelAnchorRef = useRef<HTMLDivElement>(null);
   const summonRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -113,7 +152,7 @@ export default function Home() {
       </AnimatePresence>
 
       {phase === "ready" && (
-        <>
+        <AchievementsProvider>
           <RuneField />
           <HextechChamber />
           <ClickPing />
@@ -122,6 +161,10 @@ export default function Home() {
           <BackgroundMusic />
           <KeyboardShortcuts onSelect={setTab} />
           <KonamiEasterEgg />
+          <AchievementTriggers tab={tab} footerRef={footerRef} />
+          <AchievementToasts />
+          <ShortcutsOverlay />
+          <WelcomeBack />
 
           {/* pointer-events-none lets empty areas pass drags through to the
               fixed 3D chamber below; interactive children re-enable them. */}
@@ -150,11 +193,14 @@ export default function Home() {
               <SummonPanel />
             </div>
 
-            <footer className="pointer-events-auto mt-auto py-8 text-center text-[10px] uppercase tracking-[0.3em] text-parchment/40">
+            <footer
+              ref={footerRef}
+              className="pointer-events-auto mt-auto py-8 text-center text-[10px] uppercase tracking-[0.3em] text-parchment/40"
+            >
               © {new Date().getFullYear()} Khairul Baharuddin — DJADULS
             </footer>
           </main>
-        </>
+        </AchievementsProvider>
       )}
     </SoundProvider>
   );
