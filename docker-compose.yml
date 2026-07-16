@@ -1,0 +1,8 @@
+services:
+  web:
+    image: ghcr.io/arul21/djaduls.dev:latest
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
