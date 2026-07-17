@@ -62,6 +62,12 @@ export default function ShortcutsOverlay() {
                   ?
                 </kbd>
               </li>
+              <li className="flex items-center justify-between text-xs text-parchment/70">
+                <span>Konami Code</span>
+                <kbd className="rounded-sm border border-gold-dim/40 px-1.5 py-0.5 font-mono text-[9px] tracking-tight text-gold-bright">
+                  ↑↑↓↓←→←→BA
+                </kbd>
+              </li>
             </ul>
           </motion.div>
         </motion.div>

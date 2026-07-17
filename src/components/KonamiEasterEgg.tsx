@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useSound } from "@/lib/sound-context";
+import { useAchievements } from "@/lib/achievements-context";
 
 const SEQUENCE = [
   "ArrowUp",
@@ -26,6 +27,7 @@ export default function KonamiEasterEgg() {
   const [active, setActive] = useState(false);
   const progressRef = useRef(0);
   const { playFanfare } = useSound();
+  const { unlock } = useAchievements();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +39,7 @@ export default function KonamiEasterEgg() {
         if (progressRef.current === SEQUENCE.length) {
           progressRef.current = 0;
           playFanfare();
+          unlock("konami-master");
           setActive(true);
           setTimeout(() => setActive(false), VISIBLE_MS);
         }
@@ -47,7 +50,7 @@ export default function KonamiEasterEgg() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [playFanfare]);
+  }, [playFanfare, unlock]);
 
   return (
     <AnimatePresence>

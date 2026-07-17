@@ -3,7 +3,8 @@ export type AchievementId =
   | "deep-diver"
   | "combo-master"
   | "summoner-verified"
-  | "collector";
+  | "collector"
+  | "konami-master";
 
 export const ACHIEVEMENTS: Record<
   AchievementId,
@@ -28,5 +29,9 @@ export const ACHIEVEMENTS: Record<
   collector: {
     title: "Collector",
     description: "Downloaded the Summoner Card.",
+  },
+  "konami-master": {
+    title: "Konami Master",
+    description: "Entered the legendary code.",
   },
 };
